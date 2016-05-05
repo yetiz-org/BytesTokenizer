@@ -8,7 +8,7 @@ apply plugin: 'idea'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-archivesBaseName = "sz-exchange"
+archivesBaseName = "bytes-tokenizer"
 
 repositories {
     mavenCentral()
@@ -38,10 +38,10 @@ buildscript {
     }
 }
 
-def manifestMainClass = 'Launcher'
+//def manifestMainClass = 'Launcher'
 def manifestImplementationVersion = "${version}"
 def manifestBuiltDate = System.currentTimeMillis()
-def manifestClassPath = configurations.compile.collect { "libs${File.separator}${it.getName()}" }.join(' ')
+//def manifestClassPath = configurations.compile.collect { "libs${File.separator}${it.getName()}" }.join(' ')
 
 task library(type: Copy) {
     into "$buildDir${File.separator}output${File.separator}libs"
@@ -70,10 +70,8 @@ task manifastJar(type: Jar) {
     from files(sourceSets.main.output.classesDir)
     from files(sourceSets.main.output.resourcesDir)
     manifest {
-        attributes 'Main-Class': manifestMainClass,
-                'Implementation-Version': manifestImplementationVersion,
-                'Built-Date': manifestBuiltDate,
-                "Class-Path": manifestClassPath
+        attributes 'Implementation-Version': manifestImplementationVersion,
+                'Built-Date': manifestBuiltDate
     }
 }
 
