@@ -1,0 +1,92 @@
+group 'org.yetiz.utils.netty'
+version '1.0-SNAPSHOT'
+
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+archivesBaseName = "sz-exchange"
+
+repositories {
+    mavenCentral()
+
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+compileJava {
+    options.compilerArgs << '-parameters'
+    options.fork = true
+    options.forkOptions.executable = 'javac'
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    // netty
+    compile 'io.netty:netty-all:4.1.0.CR7'
+    // for Logging - start
+    compile 'org.slf4j:slf4j-api:1.7.12'
+    compile 'org.apache.logging.log4j:log4j-slf4j-impl:2.3'
+    compile 'org.apache.logging.log4j:log4j-api:2.3'
+    compile 'org.apache.logging.log4j:log4j-core:2.3'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.6.1'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.6.1'
+    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.6.1'
+    // reflection
+    compile 'org.reflections:reflections:0.9.10'
+    // for Logging - end
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+def manifestMainClass = 'Launcher'
+def manifestImplementationVersion = "${version}"
+def manifestBuiltDate = System.currentTimeMillis()
+def manifestClassPath = configurations.compile.collect { "libs${File.separator}${it.getName()}" }.join(' ')
+
+task library(type: Copy) {
+    into "$buildDir${File.separator}output${File.separator}libs"
+    from configurations.runtime
+}
+
+jar {
+    dependsOn library
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    destinationDir file("$buildDir${File.separator}output/")
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    destinationDir file("$buildDir${File.separator}output/")
+    from sourceSets.main.allSource
+}
+
+task manifastJar(type: Jar) {
+    archiveName = "$baseName-$version.$extension"
+    destinationDir file("$buildDir${File.separator}output/")
+    from files(sourceSets.main.output.classesDir)
+    from files(sourceSets.main.output.resourcesDir)
+    manifest {
+        attributes 'Main-Class': manifestMainClass,
+                'Implementation-Version': manifestImplementationVersion,
+                'Built-Date': manifestBuiltDate,
+                "Class-Path": manifestClassPath
+    }
+}
+
+artifacts {
+    archives javadocJar, sourcesJar, manifastJar
+}
